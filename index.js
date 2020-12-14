@@ -4,10 +4,10 @@ const JiraApi = require('jira-client')
 
 
 try {
-    const input = core.getInput('search');
+    const issueNumberInput = core.getInput('issueNumber');
     const statusMatchInput = core.getInput('status');
     
-    const search = input ? input : github.context.payload.pull_request.head.ref;
+    const search = issueNumber ? issueNumber : github.context.payload.pull_request.head.ref;
     const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
     
     console.log(`Searching "${search}" for Jira issue number.`)
