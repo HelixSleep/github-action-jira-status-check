@@ -1,6 +1,7 @@
-import core from '@actions/core';
-import github from '@actions/github';
-import JiraApi from 'jira-client';
+const core = require('@actions/core');
+const github = require('@actions/github')
+const JiraApi = require('jira-client')
+
 
 try {
     const ref = github.context.payload.pull_request.head.ref;
