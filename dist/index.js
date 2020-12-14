@@ -12,7 +12,6 @@ const JiraApi = __webpack_require__(5187)
 
 try {
     const ref = github.context.payload.pull_request.head.ref;
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
     console.log(`Ref: ${ref}`);
     console.log(`JIRA_BASE_URL: ${process.env.JIRA_BASE_URL}`);
     console.log(`JIRA_USER_EMAIL: ${process.env.JIRA_USER_EMAIL}`);
@@ -28,24 +27,40 @@ try {
     });
     
     const input = core.getInput('search');
+    const statusMatchInput = core.getInput('status');
+    const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
     const search = input ? input : ref;
 
-    console.log(`Searching "${search}" for Jira ticket ID.`)
+    console.log(`Searching "${search}" for Jira issue number.`)
     
     const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
     const issueNumber = match ? match[0] : null
-    console.log(`Found: ${issueNumber}`)
-
-    async function logIssueName() {
-        try {
-            const issue = await jira.findIssue(issueNumber);
-            console.log(`Status: ${issue.fields.status.name}`);
-        } catch (err) {
-            console.error(err);
-        }
+    
+    if (!issueNumber) {
+        console.log('No issue number found. Assuming ready.')
+        return;
     }
     
+    console.log(`Found: ${issueNumber}`)
+
+    jira.findIssue(issueNumber)
+        .then(issue => {
+            const statusFound = issue.fields.status.name;
+            console.log(`Status: ${statusFound}`);
+            core.setOutput("status", statusFound);
+        })
+        .catch(err => {
+            console.error(err);
+            core.setFailed(error.message);
+        });
+    
     core.setOutput("issueNumber", issueNumber);
+
+    if (statusFound !== statusMatch) {
+        core.setFailed(`Status must be "${statusFound}". Found "${statusMatch}".`);
+    }
+
+    const payload = JSON.stringify(github.context.payload, undefined, 2)
     console.log(`The event payload: ${payload}`);
 } catch (error) {
     core.setFailed(error.message);
