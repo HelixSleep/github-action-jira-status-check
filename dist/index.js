@@ -14,7 +14,7 @@ try {
     const issueNumberInput = core.getInput('issueNumber');
     const statusMatchInput = core.getInput('status');
     
-    const search = issueNumber ? issueNumber : github.context.payload.pull_request.head.ref;
+    const search = issueNumberInput ? issueNumberInput : github.context.payload.pull_request.head.ref;
     const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
     
     console.log(`Searching "${search}" for Jira issue number.`)
