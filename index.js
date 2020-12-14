@@ -1,15 +1,28 @@
-import core from '@actions/core';
-import github from '@actions/github';
-import JiraApi from 'jira-client';
+const core = require('@actions/core');
+const github = require('@actions/github')
+const JiraApi = require('jira-client')
+
 
 try {
-    const ref = github.context.payload.pull_request.head.ref;
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`Ref: ${ref}`);
-    console.log(`JIRA_BASE_URL: ${process.env.JIRA_BASE_URL}`);
-    console.log(`JIRA_USER_EMAIL: ${process.env.JIRA_USER_EMAIL}`);
-    console.log(`JIRA_API_TOKEN: ${process.env.JIRA_API_TOKEN}`);
+    const issueNumberInput = core.getInput('issueNumber');
+    const statusMatchInput = core.getInput('status');
     
+    const search = issueNumberInput ? issueNumberInput : github.context.payload.pull_request.head.ref;
+    const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
+    
+    console.log(`Searching "${search}" for Jira issue number.`)
+
+    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
+    const issueNumber = match ? match[0] : null
+
+    if (!issueNumber) {
+        console.log('No issue number found. Assuming ready.')
+        return;
+    }
+    
+    console.log(`Issue number found: ${issueNumber}`)
+    core.setOutput("issueNumber", issueNumber);
+
     let jira = new JiraApi({
         protocol: 'https',
         host: process.env.JIRA_BASE_URL,
@@ -17,28 +30,22 @@ try {
         password: process.env.JIRA_API_TOKEN,
         apiVersion: '2',
         strictSSL: true
-    });
+    });    
     
-    const input = core.getInput('search');
-    const search = input ? input : ref;
+    jira.findIssue(issueNumber)
+        .then(issue => {
+            const statusFound = issue.fields.status.name;
+            console.log(`Status: ${statusFound}`);
+            core.setOutput("status", statusFound);
 
-    console.log(`Searching "${search}" for Jira ticket ID.`)
-    
-    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
-    const issueNumber = match ? match[0] : null
-    console.log(`Found: ${issueNumber}`)
-
-    async function logIssueName() {
-        try {
-            const issue = await jira.findIssue(issueNumber);
-            console.log(`Status: ${issue.fields.status.name}`);
-        } catch (err) {
+            if (statusFound !== statusMatch) {
+                core.setFailed(`Status must be "${statusMatch}". Found "${statusFound}".`);
+            }
+        })
+        .catch(err => {
             console.error(err);
-        }
-    }
-    
-    core.setOutput("issueNumber", issueNumber);
-    console.log(`The event payload: ${payload}`);
+            core.setFailed(error.message);
+        });
 } catch (error) {
     core.setFailed(error.message);
 }

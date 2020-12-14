@@ -3,59 +3,58 @@ module.exports =
 /******/ 	var __webpack_modules__ = ({
 
 /***/ 8771:
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5855);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(5272);
-/* harmony import */ var _actions_github__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_actions_github__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var jira_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(5187);
-/* harmony import */ var jira_client__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(jira_client__WEBPACK_IMPORTED_MODULE_2__);
-
-
+const core = __webpack_require__(5855);
+const github = __webpack_require__(5272)
+const JiraApi = __webpack_require__(5187)
 
 
 try {
-    const ref = (_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.payload.pull_request.head.ref);
-    const payload = JSON.stringify((_actions_github__WEBPACK_IMPORTED_MODULE_1___default().context.payload), undefined, 2)
-    console.log(`Ref: ${ref}`);
-    console.log(`JIRA_BASE_URL: ${process.env.JIRA_BASE_URL}`);
-    console.log(`JIRA_USER_EMAIL: ${process.env.JIRA_USER_EMAIL}`);
-    console.log(`JIRA_API_TOKEN: ${process.env.JIRA_API_TOKEN}`);
+    const issueNumberInput = core.getInput('issueNumber');
+    const statusMatchInput = core.getInput('status');
     
-    let jira = new (jira_client__WEBPACK_IMPORTED_MODULE_2___default())({
+    const search = issueNumberInput ? issueNumberInput : github.context.payload.pull_request.head.ref;
+    const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
+    
+    console.log(`Searching "${search}" for Jira issue number.`)
+
+    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
+    const issueNumber = match ? match[0] : null
+
+    if (!issueNumber) {
+        console.log('No issue number found. Assuming ready.')
+        return;
+    }
+    
+    console.log(`Issue number found: ${issueNumber}`)
+    core.setOutput("issueNumber", issueNumber);
+
+    let jira = new JiraApi({
         protocol: 'https',
         host: process.env.JIRA_BASE_URL,
         username: process.env.JIRA_USER_EMAIL,
         password: process.env.JIRA_API_TOKEN,
         apiVersion: '2',
         strictSSL: true
-    });
+    });    
     
-    const input = _actions_core__WEBPACK_IMPORTED_MODULE_0___default().getInput('search');
-    const search = input ? input : ref;
+    jira.findIssue(issueNumber)
+        .then(issue => {
+            const statusFound = issue.fields.status.name;
+            console.log(`Status: ${statusFound}`);
+            core.setOutput("status", statusFound);
 
-    console.log(`Searching "${search}" for Jira ticket ID.`)
-    
-    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
-    const issueNumber = match ? match[0] : null
-    console.log(`Found: ${issueNumber}`)
-
-    async function logIssueName() {
-        try {
-            const issue = await jira.findIssue(issueNumber);
-            console.log(`Status: ${issue.fields.status.name}`);
-        } catch (err) {
+            if (statusFound !== statusMatch) {
+                core.setFailed(`Status must be "${statusMatch}". Found "${statusFound}".`);
+            }
+        })
+        .catch(err => {
             console.error(err);
-        }
-    }
-    
-    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setOutput("issueNumber", issueNumber);
-    console.log(`The event payload: ${payload}`);
+            core.setFailed(error.message);
+        });
 } catch (error) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_0___default().setFailed(error.message);
+    core.setFailed(error.message);
 }
 
 /***/ }),
@@ -48897,46 +48896,6 @@ module.exports = require("zlib");;
 /******/ 	}
 /******/ 	
 /************************************************************************/
-/******/ 	/* webpack/runtime/compat get default export */
-/******/ 	(() => {
-/******/ 		// getDefaultExport function for compatibility with non-harmony modules
-/******/ 		__webpack_require__.n = (module) => {
-/******/ 			var getter = module && module.__esModule ?
-/******/ 				() => module['default'] :
-/******/ 				() => module;
-/******/ 			__webpack_require__.d(getter, { a: getter });
-/******/ 			return getter;
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/define property getters */
-/******/ 	(() => {
-/******/ 		// define getter functions for harmony exports
-/******/ 		__webpack_require__.d = (exports, definition) => {
-/******/ 			for(var key in definition) {
-/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 				}
-/******/ 			}
-/******/ 		};
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
-/******/ 	(() => {
-/******/ 		__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
-/******/ 	})();
-/******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/node module decorator */
 /******/ 	(() => {
 /******/ 		__webpack_require__.nmd = (module) => {
