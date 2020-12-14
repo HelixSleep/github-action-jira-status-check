@@ -1,0 +1,12 @@
+name: 'Hello World'
+description: 'Greet someone and record the time'
+inputs:
+  search:  # id of input
+    description: 'The search string'
+    required: true
+outputs:
+  ticket_id: # id of output
+    description: 'The Jira ticket ID'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
