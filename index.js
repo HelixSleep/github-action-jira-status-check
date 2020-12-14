@@ -5,12 +5,23 @@ const JiraApi = require('jira-client')
 
 try {
     const input = core.getInput('search');
-    const search = input ? input : github.context.payload.pull_request.head.ref;
-
     const statusMatchInput = core.getInput('status');
+    
+    const search = input ? input : github.context.payload.pull_request.head.ref;
     const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
     
     console.log(`Searching "${search}" for Jira issue number.`)
+
+    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
+    const issueNumber = match ? match[0] : null
+
+    if (!issueNumber) {
+        console.log('No issue number found. Assuming ready.')
+        return;
+    }
+    
+    console.log(`Issue number found: ${issueNumber}`)
+    core.setOutput("issueNumber", issueNumber);
 
     let jira = new JiraApi({
         protocol: 'https',
@@ -21,30 +32,15 @@ try {
         strictSSL: true
     });    
     
-    const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
-    const issueNumber = match ? match[0] : null
-    
-    if (!issueNumber) {
-        console.log('No issue number found. Assuming ready.')
-        return;
-    }
-    
-    console.log(`Issue number found: ${issueNumber}`)
-    
     jira.findIssue(issueNumber)
         .then(issue => {
             const statusFound = issue.fields.status.name;
             console.log(`Status: ${statusFound}`);
             core.setOutput("status", statusFound);
 
-            core.setOutput("issueNumber", issueNumber);
-
             if (statusFound !== statusMatch) {
                 core.setFailed(`Status must be "${statusMatch}". Found "${statusFound}".`);
             }
-
-            const payload = JSON.stringify(github.context.payload, undefined, 2)
-            console.log(`The event payload: ${payload}`);
         })
         .catch(err => {
             console.error(err);
