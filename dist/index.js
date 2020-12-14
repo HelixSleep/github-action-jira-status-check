@@ -11,12 +11,14 @@ const JiraApi = __webpack_require__(5187)
 
 
 try {
-    const ref = github.context.payload.pull_request.head.ref;
-    console.log(`Ref: ${ref}`);
-    console.log(`JIRA_BASE_URL: ${process.env.JIRA_BASE_URL}`);
-    console.log(`JIRA_USER_EMAIL: ${process.env.JIRA_USER_EMAIL}`);
-    console.log(`JIRA_API_TOKEN: ${process.env.JIRA_API_TOKEN}`);
+    const input = core.getInput('search');
+    const search = input ? input : github.context.payload.pull_request.head.ref;
+
+    const statusMatchInput = core.getInput('status');
+    const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
     
+    console.log(`Searching "${search}" for Jira issue number.`)
+
     let jira = new JiraApi({
         protocol: 'https',
         host: process.env.JIRA_BASE_URL,
@@ -24,14 +26,7 @@ try {
         password: process.env.JIRA_API_TOKEN,
         apiVersion: '2',
         strictSSL: true
-    });
-    
-    const input = core.getInput('search');
-    const statusMatchInput = core.getInput('status');
-    const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';
-    const search = input ? input : ref;
-
-    console.log(`Searching "${search}" for Jira issue number.`)
+    });    
     
     const match = search.match(/([A-Za-z]{3}-\d{1,})/g)
     const issueNumber = match ? match[0] : null
@@ -41,34 +36,18 @@ try {
         return;
     }
     
-    console.log(`Found: ${issueNumber}`)
+    console.log(`Issue number found: ${issueNumber}`)
     
-    let statusFound = '';
-
-    // async function logIssueName() {
-    //     try {
-    //         const issue = await jira.findIssue(issueNumber);
-    //         statusFound = issue.fields.status.name;
-    //         console.log(`Status: ${issue.fields.status.name}`);
-            
-    //         core.setOutput("status", statusFound);
-    //     } catch (err) {
-    //         console.error(err);
-    //     }
-    // }
-    
-    console.log(`Status: ${statusFound}`);
-
     jira.findIssue(issueNumber)
         .then(issue => {
-            statusFound = issue.fields.status.name;
+            const statusFound = issue.fields.status.name;
             console.log(`Status: ${statusFound}`);
             core.setOutput("status", statusFound);
 
             core.setOutput("issueNumber", issueNumber);
 
             if (statusFound !== statusMatch) {
-                core.setFailed(`Status must be "${statusFound}". Found "${statusMatch}".`);
+                core.setFailed(`Status must be "${statusMatch}". Found "${statusFound}".`);
             }
 
             const payload = JSON.stringify(github.context.payload, undefined, 2)
