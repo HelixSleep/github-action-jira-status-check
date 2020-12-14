@@ -45,39 +45,39 @@ try {
     
     let statusFound = '';
 
-    async function logIssueName() {
-        try {
-            const issue = await jira.findIssue(issueNumber);
-            statusFound = issue.fields.status.name;
-            console.log(`Status: ${issue.fields.status.name}`);
+    // async function logIssueName() {
+    //     try {
+    //         const issue = await jira.findIssue(issueNumber);
+    //         statusFound = issue.fields.status.name;
+    //         console.log(`Status: ${issue.fields.status.name}`);
             
-            core.setOutput("status", statusFound);
-        } catch (err) {
-            console.error(err);
-        }
-    }
+    //         core.setOutput("status", statusFound);
+    //     } catch (err) {
+    //         console.error(err);
+    //     }
+    // }
     
     console.log(`Status: ${statusFound}`);
 
-    // jira.findIssue(issueNumber)
-    //     .then(issue => {
-    //         statusFound = issue.fields.status.name;
-    //         console.log(`Status: ${statusFound}`);
-    //         core.setOutput("status", statusFound);
+    jira.findIssue(issueNumber)
+        .then(issue => {
+            statusFound = issue.fields.status.name;
+            console.log(`Status: ${statusFound}`);
+            core.setOutput("status", statusFound);
 
-    //         core.setOutput("issueNumber", issueNumber);
-    //     })
-    //     .catch(err => {
-    //         console.error(err);
-    //         core.setFailed(error.message);
-    //     });
+            core.setOutput("issueNumber", issueNumber);
 
-    if (statusFound !== statusMatch) {
-        core.setFailed(`Status must be "${statusFound}". Found "${statusMatch}".`);
-    }
-    
-    const payload = JSON.stringify(github.context.payload, undefined, 2)
-    console.log(`The event payload: ${payload}`);
+            if (statusFound !== statusMatch) {
+                core.setFailed(`Status must be "${statusFound}". Found "${statusMatch}".`);
+            }
+
+            const payload = JSON.stringify(github.context.payload, undefined, 2)
+            console.log(`The event payload: ${payload}`);
+        })
+        .catch(err => {
+            console.error(err);
+            core.setFailed(error.message);
+        });
 } catch (error) {
     core.setFailed(error.message);
 }
