@@ -15,8 +15,7 @@ try {
     const issueNumber = match ? match[0] : null
 
     if (!issueNumber) {
-        console.log('No issue number found. Assuming ready.')
-        return;
+        return core.setFailed('No issue number found. Assuming not ready.');
     }
 
     console.log(`Issue number found: ${issueNumber}`)
