@@ -3,8 +3,8 @@ const github = require('@actions/github')
 const JiraApi = require('jira-client')
 
 try {
-    const issueNumberInput = core.getInput('issueNumber');
-    const statusMatchInput = core.getInput('status');
+    const issueNumberInput = core.getInput('ticket_id');
+    const statusMatchInput = core.getInput('expected_status');
 
     const search = issueNumberInput ? issueNumberInput : github.context.payload.pull_request.head.ref;
     const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';

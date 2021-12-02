@@ -48861,8 +48861,8 @@ const github = __nccwpck_require__(5438)
 const JiraApi = __nccwpck_require__(6411)
 
 try {
-    const issueNumberInput = core.getInput('issueNumber');
-    const statusMatchInput = core.getInput('status');
+    const issueNumberInput = core.getInput('ticket_id');
+    const statusMatchInput = core.getInput('expected_status');
 
     const search = issueNumberInput ? issueNumberInput : github.context.payload.pull_request.head.ref;
     const statusMatch = statusMatchInput ? statusMatchInput : 'Under Code Review';

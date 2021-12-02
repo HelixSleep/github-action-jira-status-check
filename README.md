@@ -26,5 +26,5 @@ The status of the Jira issue.
 
 uses: HelixSleep/github-action-jira-status-check@1.0
 with:
-    issueNumber: 'LEG-100' # Optional. Will look for ticket ID in branch name if not provided.
-    status: 'QA Review' # Optional. Defaults to 'Under Code Review'.
+    ticket_id: 'LEG-100' # Optional. Will look for ticket ID in branch name if not provided.
+    expected_status: 'QA Review' # Optional. Defaults to 'Under Code Review'.
