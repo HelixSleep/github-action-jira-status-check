@@ -23,8 +23,9 @@ The Jira issue number found.
 The status of the Jira issue.
 
 ## Example usage
-
+```
 uses: HelixSleep/github-action-jira-status-check@1.0
 with:
     ticket_id: 'LEG-100' # Optional. Will look for ticket ID in branch name if not provided.
     expected_status: 'QA Review' # Optional. Defaults to 'Under Code Review'.
+```
