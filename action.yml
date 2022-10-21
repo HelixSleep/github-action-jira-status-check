@@ -5,11 +5,11 @@ color: 'blue'
 inputs:
   ticket_id:  # id of input
     description: 'The ticket ID'
-    required: true
+    required: false
   expected_status: # id of input
     description: 'The expected status of the ticket. I.e. "Under Code Review"'
     default: "Under Code Review"
-    required: false
+    required: true
 outputs:
   ticket_id: # id of output
     description: 'The Jira ticket ID'
