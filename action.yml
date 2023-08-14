@@ -1,18 +1,11 @@
-name: 'Jira ticket ID'
-description: 'Get the Jira ticket ID from a search string'
+name: 'Jira Ticket Status'
+description: 'Get the status of a Jira Ticket'
 icon: 'check-circle'
 color: 'blue'
-inputs:
-  ticket_id:  # id of input
-    description: 'The ticket ID'
-    required: true
   expected_status: # id of input
-    description: 'The expected status of the ticket. I.e. "Under Code Review"'
-    default: "Under Code Review"
-    required: false
-outputs:
-  ticket_id: # id of output
-    description: 'The Jira ticket ID'
+    description: 'The expected status of the ticket. I.e. "In Review'
+    default: "In Review"
+    required: true
 runs:
   using: 'node12'
   main: 'dist/index.js'
